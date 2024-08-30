@@ -7,7 +7,6 @@ function App() {
   const [N, setN] = useState < number > (0);
 
   const handleGenerate = () => {
-
   }
 
   return (
