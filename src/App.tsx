@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import './App.css';
 import Table from './components/Table';
-import Cell from './types';
+import { Cell } from './types';
 
 const App: React.FC = () => {
   const [matrix, setMatrix] = useState < Cell[][] > ([]);
   const [M, setM] = useState < number > (0);
   const [N, setN] = useState < number > (0);
+  const [error, setError] = useState < string | null > (null);
 
   const generateMatrix = (M: number, N: number) => {
     const newMatrix: Cell[][] = [];
@@ -26,10 +27,12 @@ const App: React.FC = () => {
     setMatrix(newMatrix);
   };
 
-  // Handler for generating matrix based on input values
   const handleGenerate = () => {
-    if (M >= 0 && M <= 100 && N >= 0 && N <= 100) {
+    if (M > 0 && M <= 100 && N > 0 && N <= 100) {
+      setError(null);
       generateMatrix(M, N);
+    } else {
+      setError('Please enter valid numbers for rows and columns (1-100).');
     }
   };
 
@@ -49,6 +52,7 @@ const App: React.FC = () => {
           placeholder="Columns"
         />
         <button onClick={handleGenerate}>Generate Matrix</button>
+        {error && <p className="error">{error}</p>}
         <Table matrix={matrix} />
       </div>
     </>
