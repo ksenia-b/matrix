@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Cell } from '../types';
-import { useMatrix } from '../contexts/MatrixContext';
 
 type TableProps = {
     matrix: Cell[][];
@@ -8,8 +7,13 @@ type TableProps = {
 };
 
 const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
-    // const { setMatrix } = useMatrix();
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+    const [hoveredValue, setHoveredValue] = useState<number | null>(null);
+    const [highlightedCells, setHighlightedCells] = useState<Set<number>>(
+        new Set()
+    );
+    const [isCellHovered, setIsCellHovered] = useState<boolean>(false)
+
 
     if (matrix.length === 0) return <p>No data available</p>;
 
@@ -61,6 +65,30 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
         rowSum === 0 ? 0 : (amount / rowSum) * 100
     );
 
+    const handleMouseLeave = () => {
+        setHoveredValue(null);
+        setHighlightedCells(new Set());
+        setIsCellHovered(false)
+    };
+
+    const onCellHover = (rowIndex, colIndex) => {
+        console.log("onMouseEnter = ", rowIndex, colIndex, " mart = ", matrix[rowIndex][colIndex]);
+        const hoveredAmount = matrix[rowIndex][colIndex].amount;
+        setHoveredValue(hoveredAmount);
+
+        const allCells = matrix.flat();
+        const sortedCells = allCells
+            .map(cell => ({ ...cell, diff: Math.abs(cell.amount - hoveredAmount) }))
+            .sort((a, b) => a.diff - b.diff)
+            .slice(0, 5);
+
+        const highlightedIds = new Set(sortedCells.map(cell => cell.id));
+
+        console.log('hig', highlightedIds, sortedCells)
+        setHighlightedCells(highlightedIds);
+        setIsCellHovered(true);
+    }
+
     return (
         <>
             <button onClick={handleAddRow}>Add Random Row</button>
@@ -80,22 +108,38 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
                         return (
                             <React.Fragment key={rowIndex}>
                                 <tr onMouseLeave={handleMouseLeaveSumCell}>
-                                    {row.map((cell, colIndex) => (
-                                        <td
-                                            key={cell.id}
-                                            onClick={() => handleCellClick(rowIndex, colIndex)}
-                                            style={{
-                                                backgroundColor: hoveredRow === rowIndex
-                                                    ? `rgba(255, 0, 0, ${calculatePercentage(cell.amount, rowSum) / 100})`
-                                                    : 'inherit',
-                                                cursor: 'pointer',
-                                            }}
-                                        >
-                                            {hoveredRow === rowIndex
-                                                ? `${calculatePercentage(cell.amount, rowSum).toFixed(2)}%`
-                                                : cell.amount}
-                                        </td>
-                                    ))}
+                                    {row.map((cell, colIndex) => {
+                                        const rowHoverStyles = hoveredRow === rowIndex
+                                            ? `rgba(255, 0, 0, ${calculatePercentage(cell.amount, rowSum) / 100})`
+                                            : 'inherit';
+
+                                        const cellHoverStyles = highlightedCells.has(cell.id)
+                                            ? 'yellow'
+                                            : 'inherit';
+
+                                        const tdStyle = {
+                                            backgroundColor: isCellHovered ? cellHoverStyles : rowHoverStyles
+                                        }
+
+                                        return (
+                                            <td
+                                                key={cell.id}
+                                                onMouseEnter={() => onCellHover(rowIndex, colIndex)}
+                                                onMouseLeave={handleMouseLeave}
+                                                onClick={() => handleCellClick(rowIndex, colIndex)}
+                                                style={tdStyle}
+                                            // style={{
+                                            //     backgroundColor: highlightedCells.has(cell.id)
+                                            //         ? 'yellow'
+                                            //         : 'inherit',
+                                            // }}
+                                            >
+                                                {hoveredRow === rowIndex
+                                                    ? `${calculatePercentage(cell.amount, rowSum).toFixed(2)}%`
+                                                    : cell.amount}
+                                            </td>
+                                        )
+                                    })}
                                     <td
                                         onMouseEnter={() => handleMouseEnterSumCell(rowIndex)}
                                         style={{ cursor: 'pointer' }}
