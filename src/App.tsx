@@ -37,25 +37,25 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
-      <div >
-        <input
-          type="number"
-          value={M}
-          onChange={(e) => setM(parseInt(e.target.value, 10))}
-          placeholder="Rows"
-        />
-        <input
-          type="number"
-          value={N}
-          onChange={(e) => setN(parseInt(e.target.value, 10))}
-          placeholder="Columns"
-        />
-        <button onClick={handleGenerate}>Generate Matrix</button>
-        {error && <p className="error">{error}</p>}
-        <Table matrix={matrix} setMatrix={setMatrix} />
-      </div>
-    </>
+
+    <div>
+      <input
+        type="number"
+        value={M}
+        onChange={(e) => setM(parseInt(e.target.value, 10))}
+        placeholder="Rows"
+      />
+      <input
+        type="number"
+        value={N}
+        onChange={(e) => setN(parseInt(e.target.value, 10))}
+        placeholder="Columns"
+      />
+      <button onClick={handleGenerate}>Generate Matrix</button>
+      {error && <p className="error">{error}</p>}
+      <Table matrix={matrix} setMatrix={setMatrix} />
+    </div>
+
   );
 };
 

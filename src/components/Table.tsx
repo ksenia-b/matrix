@@ -85,7 +85,7 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
     }
 
     return (
-        <>
+        <div >
             <button onClick={handleAddRow}>Add Random Row</button>
             <table className="data-table">
                 <thead>
@@ -156,7 +156,7 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
                     </tr>
                 </tbody>
             </table>
-        </>
+        </div>
     );
 };
 
