@@ -4,10 +4,10 @@ import Table from './components/Table';
 import { Cell } from './types';
 
 const App: React.FC = () => {
-  const [matrix, setMatrix] = useState < Cell[][] > ([]);
-  const [M, setM] = useState < number > (0);
-  const [N, setN] = useState < number > (0);
-  const [error, setError] = useState < string | null > (null);
+  const [matrix, setMatrix] = useState<Cell[][]>([]);
+  const [M, setM] = useState<number>(0);
+  const [N, setN] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
 
   const generateMatrix = (M: number, N: number) => {
     const newMatrix: Cell[][] = [];
@@ -53,7 +53,7 @@ const App: React.FC = () => {
         />
         <button onClick={handleGenerate}>Generate Matrix</button>
         {error && <p className="error">{error}</p>}
-        <Table matrix={matrix} />
+        <Table matrix={matrix} setMatrix={setMatrix} />
       </div>
     </>
   );
