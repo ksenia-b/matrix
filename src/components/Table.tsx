@@ -21,12 +21,10 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
 
     const rowSums = matrix.map(row => row.reduce((sum, cell) => sum + cell.amount, 0));
 
-    const percentiles = Array.from({ length: numCols }, (_, colIndex) => {
-        const colValues = matrix.map(row => row[colIndex].amount).sort((a, b) => a - b);
-        const middle = Math.floor(colValues.length / 2);
-        return colValues.length % 2 === 0
-            ? (colValues[middle - 1] + colValues[middle]) / 2
-            : colValues[middle];
+    const columnAverages = Array.from({ length: numCols }, (_, colIndex) => {
+        const colValues = matrix.map(row => row[colIndex].amount);
+        const sum = colValues.reduce((total, value) => total + value, 0);
+        return sum / colValues.length;
     });
 
     const handleCellClick = (rowIndex: number, colIndex: number) => {
@@ -47,8 +45,8 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
 
     const handleAddRow = () => {
         const newRow: Cell[] = Array.from({ length: numCols }, (_, colIndex) => ({
-            id: Date.now() + colIndex, // Unique ID
-            amount: Math.floor(Math.random() * 900) + 100, // Random number between 100 and 999
+            id: Date.now() + colIndex,
+            amount: Math.floor(Math.random() * 900) + 100,
         }));
         setMatrix([...matrix, newRow]);
     };
@@ -72,7 +70,6 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
     };
 
     const onCellHover = (rowIndex, colIndex) => {
-        console.log("onMouseEnter = ", rowIndex, colIndex, " mart = ", matrix[rowIndex][colIndex]);
         const hoveredAmount = matrix[rowIndex][colIndex].amount;
         setHoveredValue(hoveredAmount);
 
@@ -83,8 +80,6 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
             .slice(0, 5);
 
         const highlightedIds = new Set(sortedCells.map(cell => cell.id));
-
-        console.log('hig', highlightedIds, sortedCells)
         setHighlightedCells(highlightedIds);
         setIsCellHovered(true);
     }
@@ -98,7 +93,7 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
                         {Array.from({ length: numCols }, (_, i) => (
                             <th key={i} scope="col">Column {i + 1}</th>
                         ))}
-                        <th scope="col">Row Sum</th>
+                        <th scope="col">Column Sum</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -106,56 +101,55 @@ const Table: React.FC<TableProps> = ({ matrix, setMatrix }) => {
                     {matrix.map((row, rowIndex) => {
                         const rowSum = rowSums[rowIndex];
                         return (
-                            <React.Fragment key={rowIndex}>
-                                <tr onMouseLeave={handleMouseLeaveSumCell}>
-                                    {row.map((cell, colIndex) => {
-                                        const rowHoverStyles = hoveredRow === rowIndex
-                                            ? `rgba(255, 0, 0, ${calculatePercentage(cell.amount, rowSum) / 100})`
-                                            : 'inherit';
+                            <tr onMouseLeave={handleMouseLeaveSumCell} key={rowIndex}>
+                                {row.map((cell, colIndex) => {
+                                    const rowHoverStyles = hoveredRow === rowIndex
+                                        ? `rgba(255, 0, 0, ${calculatePercentage(cell.amount, rowSum) / 100})`
+                                        : 'inherit';
 
-                                        const cellHoverStyles = highlightedCells.has(cell.id)
-                                            ? 'yellow'
-                                            : 'inherit';
+                                    const cellHoverStyles = highlightedCells.has(cell.id)
+                                        ? 'yellow'
+                                        : 'inherit';
 
-                                        const tdStyle = {
-                                            backgroundColor: isCellHovered ? cellHoverStyles : rowHoverStyles
-                                        }
+                                    const tdStyle = {
+                                        backgroundColor: isCellHovered ? cellHoverStyles : rowHoverStyles
+                                    }
 
-                                        return (
-                                            <td
-                                                key={cell.id}
-                                                onMouseEnter={() => onCellHover(rowIndex, colIndex)}
-                                                onMouseLeave={handleMouseLeave}
-                                                onClick={() => handleCellClick(rowIndex, colIndex)}
-                                                style={tdStyle}
-                                            // style={{
-                                            //     backgroundColor: highlightedCells.has(cell.id)
-                                            //         ? 'yellow'
-                                            //         : 'inherit',
-                                            // }}
-                                            >
-                                                {hoveredRow === rowIndex
-                                                    ? `${calculatePercentage(cell.amount, rowSum).toFixed(2)}%`
-                                                    : cell.amount}
-                                            </td>
-                                        )
-                                    })}
-                                    <td
-                                        onMouseEnter={() => handleMouseEnterSumCell(rowIndex)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        {rowSum}
-                                    </td>
-                                    <td>
-                                        <button onClick={() => handleRemoveRow(rowIndex)}>Remove</button>
-                                    </td>
-                                </tr>
-                            </React.Fragment>
+                                    return (
+                                        <td
+                                            key={cell.id}
+                                            onMouseEnter={() => onCellHover(rowIndex, colIndex)}
+                                            onMouseLeave={handleMouseLeave}
+                                            onClick={() => handleCellClick(rowIndex, colIndex)}
+                                            style={tdStyle}
+
+                                        >
+                                            {hoveredRow === rowIndex
+                                                ? `${calculatePercentage(cell.amount, rowSum).toFixed(2)}%`
+                                                : cell.amount}
+                                        </td>
+                                    )
+                                })}
+                                <td
+                                    onMouseEnter={() => handleMouseEnterSumCell(rowIndex)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {rowSum}
+                                </td>
+                                <td>
+                                    <button onClick={() => handleRemoveRow(rowIndex)}>Remove</button>
+                                </td>
+                            </tr>
                         );
                     })}
                     <tr>
-                        {percentiles.map((percentile, colIndex) => (
-                            <td key={colIndex}>{percentile}</td>
+                        <td colSpan={numCols + 2} style={{ fontWeight: 'bold', textAlign: 'center' }}>
+                            Average
+                        </td>
+                    </tr>
+                    <tr>
+                        {columnAverages.map((average, colIndex) => (
+                            <td key={colIndex}>{average.toFixed(2)}</td>
                         ))}
                         <td></td>
                         <td></td>
